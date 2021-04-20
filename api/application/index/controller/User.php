@@ -160,6 +160,41 @@ class User extends Controller
             return json([200, ['status'=>0, 'msg'=>"邮件发送成功"]]);
         }
     }
+
+    public function passwordChangeApi()
+	{
+		$db = Db::connect();
+		$param = input('post.');
+		// +----------------------------------------------------------------------
+        // | 解析收到的POST请求
+        // | uid：用户名
+        // | oldpassword：旧密码
+		// | password: 密码	
+        // +----------------------------------------------------------------------
+        $where['uid'] = $param['uid'];
+        $where['password'] = md5($param['oldpassword']);
+        if(isset($where)){
+            $res = $db->table('user')  
+            	->newQuery()    
+               	->where($where)
+               	->where('is_delete',0)
+                ->field('uid')
+                ->select();
+        }
+        if(count($res) == 0){
+            return json([501]);
+        }
+
+        if(count($res) > 0){
+            $data1 = ['password' => md5($param['password']) ];
+            $res = $db->table('user')
+                ->newQuery()  
+                ->where('uid', $param['uid'])      
+                ->update($data1) ;
+        return json([200]);
+	}
+
+
     
 }
 
